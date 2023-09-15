@@ -177,7 +177,7 @@ fn bench_cache(c: &mut Criterion) {
         let non_memcache = CacheOptions {
             base_dir: TempDir::new().unwrap().into_path(),
             available_capabilities: capabilities_from_csv("iterator,staking"),
-            memory_cache_size: Size(0),
+            memory_cache_size: Size::kilo(0),
             instance_memory_limit: DEFAULT_MEMORY_LIMIT,
         };
         let cache: Cache<MockApi, MockStorage, MockQuerier> =
@@ -199,7 +199,7 @@ fn bench_cache(c: &mut Criterion) {
         let non_memcache = CacheOptions {
             base_dir: TempDir::new().unwrap().into_path(),
             available_capabilities: capabilities_from_csv("iterator,staking"),
-            memory_cache_size: Size(0),
+            memory_cache_size: Size::kilo(0),
             instance_memory_limit: DEFAULT_MEMORY_LIMIT,
         };
         let mut cache: Cache<MockApi, MockStorage, MockQuerier> =
