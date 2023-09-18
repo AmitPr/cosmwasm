@@ -3,7 +3,7 @@ use core::marker::PhantomData;
 #[cfg(feature = "cosmwasm_1_3")]
 use core::ops::Bound;
 use serde::de::DeserializeOwned;
-#[cfg(feature = "ibc3")]
+#[cfg(feature = "stargate")]
 use serde::Serialize;
 #[cfg(feature = "cosmwasm_1_3")]
 use std::collections::BTreeSet;
@@ -14,7 +14,7 @@ use crate::binary::Binary;
 use crate::coin::Coin;
 use crate::deps::OwnedDeps;
 use crate::errors::{RecoverPubkeyError, StdError, StdResult, SystemError, VerificationError};
-#[cfg(feature = "ibc3")]
+#[cfg(feature = "stargate")]
 use crate::ibc::{
     IbcAcknowledgement, IbcPacket, IbcPacketAckMsg, IbcPacketReceiveMsg, IbcPacketTimeoutMsg,
     IbcTimeoutBlock,
@@ -356,7 +356,7 @@ pub fn mock_ibc_channel_close_confirm(
 
 /// Creates a IbcPacketReceiveMsg for testing ibc_packet_receive. You set a few key parameters that are
 /// often parsed. If you want to set more, use this as a default and mutate other fields
-#[cfg(feature = "ibc3")]
+#[cfg(feature = "stargate")]
 pub fn mock_ibc_packet_recv(
     my_channel_id: &str,
     data: &impl Serialize,
@@ -379,7 +379,6 @@ pub fn mock_ibc_packet_recv(
             }
             .into(),
         },
-        #[cfg(feature = "ibc3")]
         Addr::unchecked("relayer"),
     ))
 }
@@ -387,7 +386,7 @@ pub fn mock_ibc_packet_recv(
 /// Creates a IbcPacket for testing ibc_packet_{ack,timeout}. You set a few key parameters that are
 /// often parsed. If you want to set more, use this as a default and mutate other fields.
 /// The difference from mock_ibc_packet_recv is if `my_channel_id` is src or dest.
-#[cfg(feature = "ibc3")]
+#[cfg(feature = "stargate")]
 fn mock_ibc_packet(my_channel_id: &str, data: &impl Serialize) -> StdResult<IbcPacket> {
     Ok(IbcPacket {
         data: to_json_binary(data)?,
@@ -411,7 +410,7 @@ fn mock_ibc_packet(my_channel_id: &str, data: &impl Serialize) -> StdResult<IbcP
 /// Creates a IbcPacketAckMsg for testing ibc_packet_ack. You set a few key parameters that are
 /// often parsed. If you want to set more, use this as a default and mutate other fields.
 /// The difference from mock_ibc_packet_recv is if `my_channel_id` is src or dest.
-#[cfg(feature = "ibc3")]
+#[cfg(feature = "stargate")]
 pub fn mock_ibc_packet_ack(
     my_channel_id: &str,
     data: &impl Serialize,
@@ -422,15 +421,14 @@ pub fn mock_ibc_packet_ack(
     Ok(IbcPacketAckMsg::new(
         ack,
         packet,
-        #[cfg(feature = "ibc3")]
         Addr::unchecked("relayer"),
     ))
 }
 
 /// Creates a IbcPacketTimeoutMsg for testing ibc_packet_timeout. You set a few key parameters that are
 /// often parsed. If you want to set more, use this as a default and mutate other fields.
-/// The difference from mock_ibc_packet_recv is if `my_channel_id` is src or dest./
-#[cfg(feature = "ibc3")]
+/// The difference from mock_ibc_packet_recv is if `my_channel_id` is src or dest.
+#[cfg(feature = "stargate")]
 pub fn mock_ibc_packet_timeout(
     my_channel_id: &str,
     data: &impl Serialize,
