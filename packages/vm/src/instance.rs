@@ -536,7 +536,7 @@ mod tests {
 
     #[test]
     fn set_debug_handler_and_unset_debug_handler_work() {
-        const LIMIT: u64 = 70_000_000_000_000;
+        const LIMIT: u64 = 70_000_000_000;
         let mut instance = mock_instance_with_gas_limit(CYBERPUNK, LIMIT);
 
         // init contract
@@ -869,7 +869,7 @@ mod tests {
 
     #[test]
     fn create_gas_report_works() {
-        const LIMIT: u64 = 700_000_000_000;
+        const LIMIT: u64 = 700_000_000;
         let mut instance = mock_instance_with_gas_limit(CONTRACT, LIMIT);
 
         let report1 = instance.create_gas_report();
@@ -887,7 +887,7 @@ mod tests {
 
         let report2 = instance.create_gas_report();
         assert_eq!(report2.used_externally, 73);
-        assert_eq!(report2.used_internally, 5764950198);
+        assert_eq!(report2.used_internally, 5765148);
         assert_eq!(report2.limit, LIMIT);
         assert_eq!(
             report2.remaining,
@@ -1076,7 +1076,7 @@ mod tests {
             .unwrap();
 
         let init_used = orig_gas - instance.get_gas_left();
-        assert_eq!(init_used, 5764950271);
+        assert_eq!(init_used, 5765221);
     }
 
     #[test]
@@ -1099,7 +1099,7 @@ mod tests {
             .unwrap();
 
         let execute_used = gas_before_execute - instance.get_gas_left();
-        assert_eq!(execute_used, 8548903606);
+        assert_eq!(execute_used, 8652406);
     }
 
     #[test]
@@ -1133,6 +1133,6 @@ mod tests {
         assert_eq!(answer.as_slice(), b"{\"verifier\":\"verifies\"}");
 
         let query_used = gas_before_query - instance.get_gas_left();
-        assert_eq!(query_used, 4493700006);
+        assert_eq!(query_used, 4493706);
     }
 }
