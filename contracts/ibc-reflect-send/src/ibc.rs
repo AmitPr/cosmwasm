@@ -1,6 +1,6 @@
 use cosmwasm_std::{
-    entry_point, from_json, to_json_binary, DepsMut, Env, IbcBasicResponse, IbcChannelCloseMsg,
-    IbcChannelConnectMsg, IbcChannelOpenMsg, IbcMsg, IbcOrder, IbcPacketAckMsg,
+    entry_point, from_json, to_json_binary, Binary, DepsMut, Env, IbcBasicResponse,
+    IbcChannelCloseMsg, IbcChannelConnectMsg, IbcChannelOpenMsg, IbcMsg, IbcOrder, IbcPacketAckMsg,
     IbcPacketReceiveMsg, IbcPacketTimeoutMsg, IbcReceiveResponse, Never, StdError, StdResult,
 };
 
@@ -94,7 +94,7 @@ pub fn ibc_packet_receive(
     _env: Env,
     _packet: IbcPacketReceiveMsg,
 ) -> Result<IbcReceiveResponse, Never> {
-    Ok(IbcReceiveResponse::new(b"{}").add_attribute("action", "ibc_packet_ack"))
+    Ok(IbcReceiveResponse::new(Binary::from(b"{}")).add_attribute("action", "ibc_packet_ack"))
 }
 
 #[entry_point]

@@ -626,8 +626,9 @@ impl<T> IbcBasicResponse<T> {
 #[non_exhaustive]
 pub struct IbcReceiveResponse<T = Empty> {
     /// The bytes we return to the contract that sent the packet.
-    /// This may represent a success or error of execution
-    pub acknowledgement: Binary,
+    /// This may represent a success or error of execution.
+    /// In case of `None`, no acknowledgement is written.
+    pub acknowledgement: Option<Binary>,
     /// Optional list of messages to pass. These will be executed in order.
     /// If the ReplyOn member is set, they will invoke this contract's `reply` entry point
     /// after execution. Otherwise, they act like "fire and forget".
@@ -650,7 +651,18 @@ pub struct IbcReceiveResponse<T = Empty> {
 
 impl<T> IbcReceiveResponse<T> {
     /// Create a new response with the given acknowledgement.
-    pub fn new(ack: impl Into<Binary>) -> Self {
+    ///
+    /// ## Examples
+    ///
+    /// ```
+    /// use cosmwasm_std::{StdAck, Binary, IbcReceiveResponse};
+    ///
+    /// let _: IbcReceiveResponse = IbcReceiveResponse::new(StdAck::success(b"my ack"));
+    /// let _: IbcReceiveResponse = IbcReceiveResponse::new(Binary::from(b"content"));
+    /// let _: IbcReceiveResponse = IbcReceiveResponse::new(None);
+    ///
+    /// ```
+    pub fn new(ack: impl Into<Option<Binary>>) -> Self {
         Self {
             acknowledgement: ack.into(),
             messages: vec![],
@@ -671,7 +683,7 @@ impl<T> IbcReceiveResponse<T> {
     ///     IbcReceiveResponse::new(ack)
     /// }
     /// ```
-    pub fn set_ack(mut self, ack: impl Into<Binary>) -> Self {
+    pub fn set_ack(mut self, ack: impl Into<Option<Binary>>) -> Self {
         self.acknowledgement = ack.into();
         self
     }

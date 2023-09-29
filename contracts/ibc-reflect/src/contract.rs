@@ -539,7 +539,8 @@ mod tests {
             res.events[0]
         );
         // acknowledgement is an error
-        let ack: AcknowledgementMsg<DispatchResponse> = from_json(res.acknowledgement).unwrap();
+        let ack: AcknowledgementMsg<DispatchResponse> =
+            from_json(res.acknowledgement.unwrap()).unwrap();
         assert_eq!(
             ack.unwrap_err(),
             "invalid packet: account channel-123 not found"
@@ -553,7 +554,7 @@ mod tests {
         let res = ibc_packet_receive(deps.as_mut(), mock_env(), msg).unwrap();
 
         // assert app-level success
-        let ack: AcknowledgementMsg<()> = from_json(res.acknowledgement).unwrap();
+        let ack: AcknowledgementMsg<()> = from_json(res.acknowledgement.unwrap()).unwrap();
         ack.unwrap();
 
         // and we dispatch the BankMsg via submessage
@@ -590,7 +591,8 @@ mod tests {
         // we didn't dispatch anything
         assert_eq!(0, res.messages.len());
         // acknowledgement is an error
-        let ack: AcknowledgementMsg<DispatchResponse> = from_json(res.acknowledgement).unwrap();
+        let ack: AcknowledgementMsg<DispatchResponse> =
+            from_json(res.acknowledgement.unwrap()).unwrap();
         assert_eq!(ack.unwrap_err(), "invalid packet: Error parsing into type ibc_reflect::msg::PacketMsg: unknown variant `reflect_code_id`, expected one of `dispatch`, `who_am_i`, `balances`, `panic`, `return_err`, `return_msgs`");
     }
 
