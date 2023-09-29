@@ -48,6 +48,14 @@ pub enum IbcMsg {
     /// This will close an existing channel that is owned by this contract.
     /// Port is auto-assigned to the contract's IBC port
     CloseChannel { channel_id: String },
+    /// This writes the ibc acknowledgement for the given packet to the chain.
+    /// This is only needed if you need to delay the acknowledgement.
+    /// In this case, you can return an [`IbcReceiveResponse`] with an acknowledgement of `None`
+    /// from `ibc_packet_receive` and call this message later.
+    WriteAcknowledgement {
+        packet_id: String,
+        ack: IbcAcknowledgement,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -652,6 +660,9 @@ pub struct IbcReceiveResponse<T = Empty> {
 impl<T> IbcReceiveResponse<T> {
     /// Create a new response with the given acknowledgement.
     ///
+    /// If you provide `None`, the acknowledgement is asynchronous and you can provide it later
+    /// using [`IbcMsg::WriteAcknowledgement`].
+    ///
     /// ## Examples
     ///
     /// ```
@@ -673,6 +684,9 @@ impl<T> IbcReceiveResponse<T> {
 
     /// Set the acknowledgement for this response.
     ///
+    /// If you provide `None`, the acknowledgement is asynchronous and you can provide it later
+    /// using [`IbcMsg::WriteAcknowledgement`].
+    ///
     /// ## Examples
     ///
     /// ```
@@ -682,6 +696,7 @@ impl<T> IbcReceiveResponse<T> {
     ///     let ack = StdAck::success(b"\x01"); // 0x01 is a FungibleTokenPacketSuccess from ICS-20.
     ///     IbcReceiveResponse::new(ack)
     /// }
+    /// _ = make_response_with_ack();
     /// ```
     pub fn set_ack(mut self, ack: impl Into<Option<Binary>>) -> Self {
         self.acknowledgement = ack.into();
