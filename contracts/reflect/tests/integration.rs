@@ -268,9 +268,11 @@ fn reply_and_query() {
     let id = 123u64;
     let data = Binary::from(b"foobar");
     let events = vec![Event::new("message").add_attribute("signer", "caller-addr")];
+    #[allow(deprecated)]
     let result = SubMsgResult::Ok(SubMsgResponse {
         events: events.clone(),
         data: Some(data.clone()),
+        msg_responses: vec![],
     });
     let subcall = Reply { id, result };
     let res: Response = reply(&mut deps, mock_env(), subcall).unwrap();
@@ -285,6 +287,9 @@ fn reply_and_query() {
     let qres: Reply = from_json(raw).unwrap();
     assert_eq!(qres.id, id);
     let result = qres.result.unwrap();
-    assert_eq!(result.data, Some(data));
+    #[allow(deprecated)]
+    {
+        assert_eq!(result.data, Some(data));
+    }
     assert_eq!(result.events, events);
 }
