@@ -2148,7 +2148,7 @@ mod tests {
                     if *contract_addr == constract1 {
                         let response = ContractInfoResponse {
                             code_id: 4,
-                            creator: "lalala".into(),
+                            creator: Addr::unchecked("lalala"),
                             admin: None,
                             pinned: false,
                             ibc_port: None,
@@ -2167,7 +2167,7 @@ mod tests {
                     if code_id == 4 {
                         let response = CodeInfoResponse {
                             code_id,
-                            creator: "lalala".into(),
+                            creator: Addr::unchecked("lalala"),
                             checksum: HexBinary::from_hex(
                                 "84cf20810fd429caf58898c3210fcb71759a27becddae08dbde8668ea2f4725d",
                             )
