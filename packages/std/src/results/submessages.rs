@@ -120,22 +120,26 @@ pub struct Reply {
 /// Success:
 ///
 /// ```
-/// # use cosmwasm_std::{to_vec, Binary, Event, SubMsgResponse, SubMsgResult};
+/// # use cosmwasm_std::{to_json_string, Binary, Event, SubMsgResponse, SubMsgResult};
 /// let response = SubMsgResponse {
 ///     data: Some(Binary::from_base64("MTIzCg==").unwrap()),
 ///     events: vec![Event::new("wasm").add_attribute("fo", "ba")],
+///     msg_responses: vec![],
 /// };
 /// let result: SubMsgResult = SubMsgResult::Ok(response);
-/// assert_eq!(to_vec(&result).unwrap(), br#"{"ok":{"events":[{"type":"wasm","attributes":[{"key":"fo","value":"ba"}]}],"data":"MTIzCg=="}}"#);
+/// assert_eq!(
+///     to_json_string(&result).unwrap(),
+///     r#"{"ok":{"events":[{"type":"wasm","attributes":[{"key":"fo","value":"ba"}]}],"data":"MTIzCg==","msg_responses":[]}}"#,
+/// );
 /// ```
 ///
 /// Failure:
 ///
 /// ```
-/// # use cosmwasm_std::{to_vec, SubMsgResult, Response};
+/// # use cosmwasm_std::{to_json_string, SubMsgResult, Response};
 /// let error_msg = String::from("Something went wrong");
 /// let result = SubMsgResult::Err(error_msg);
-/// assert_eq!(to_vec(&result).unwrap(), br#"{"error":"Something went wrong"}"#);
+/// assert_eq!(to_json_string(&result).unwrap(), r#"{"error":"Something went wrong"}"#);
 /// ```
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -197,6 +201,14 @@ impl From<SubMsgResult> for Result<SubMsgResponse, String> {
 pub struct SubMsgResponse {
     pub events: Vec<Event>,
     pub data: Option<Binary>,
+    #[serde(default)]
+    pub msg_responses: Vec<MsgResponseValue>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct MsgResponseValue {
+    pub type_url: String,
+    pub value: Binary,
 }
 
 #[cfg(test)]
@@ -208,20 +220,26 @@ mod tests {
     fn sub_msg_result_serialization_works() {
         let result = SubMsgResult::Ok(SubMsgResponse {
             data: None,
+            msg_responses: vec![],
             events: vec![],
         });
         assert_eq!(
             &to_json_vec(&result).unwrap(),
-            br#"{"ok":{"events":[],"data":null}}"#
+            br#"{"ok":{"events":[],"data":null,"msg_responses":[]}}"#
         );
 
         let result = SubMsgResult::Ok(SubMsgResponse {
             data: Some(Binary::from_base64("MTIzCg==").unwrap()),
+            msg_responses: vec![MsgResponseValue {
+                type_url: "URL".to_string(),
+                value: Binary::from_base64("MTIzCg==").unwrap(),
+            }],
             events: vec![Event::new("wasm").add_attribute("fo", "ba")],
         });
+        println!("{}", &crate::to_json_string(&result).unwrap());
         assert_eq!(
             &to_json_vec(&result).unwrap(),
-            br#"{"ok":{"events":[{"type":"wasm","attributes":[{"key":"fo","value":"ba"}]}],"data":"MTIzCg=="}}"#
+            br#"{"ok":{"events":[{"type":"wasm","attributes":[{"key":"fo","value":"ba"}]}],"data":"MTIzCg==","msg_responses":[{"type_url":"URL","value":"MTIzCg=="}]}}"#
         );
 
         let result: SubMsgResult = SubMsgResult::Err("broken".to_string());
@@ -230,21 +248,28 @@ mod tests {
 
     #[test]
     fn sub_msg_result_deserialization_works() {
+        // should work without `msg_responses`
         let result: SubMsgResult = from_json(br#"{"ok":{"events":[],"data":null}}"#).unwrap();
         assert_eq!(
             result,
             SubMsgResult::Ok(SubMsgResponse {
                 events: vec![],
                 data: None,
+                msg_responses: vec![]
             })
         );
 
         let result: SubMsgResult = from_json(
-            br#"{"ok":{"events":[{"type":"wasm","attributes":[{"key":"fo","value":"ba"}]}],"data":"MTIzCg=="}}"#).unwrap();
+            br#"{"ok":{"events":[{"type":"wasm","attributes":[{"key":"fo","value":"ba"}]}],"data":"MTIzCg==",
+            "msg_responses":[{"type_url":"URL","value":"MTIzCg=="}]}}"#).unwrap();
         assert_eq!(
             result,
             SubMsgResult::Ok(SubMsgResponse {
                 data: Some(Binary::from_base64("MTIzCg==").unwrap()),
+                msg_responses: vec![MsgResponseValue {
+                    type_url: "URL".to_string(),
+                    value: Binary::from_base64("MTIzCg==").unwrap(),
+                }],
                 events: vec![Event::new("wasm").add_attribute("fo", "ba")],
             })
         );
@@ -269,6 +294,10 @@ mod tests {
     fn sub_msg_result_unwrap_works() {
         let response = SubMsgResponse {
             data: Some(Binary::from_base64("MTIzCg==").unwrap()),
+            msg_responses: vec![MsgResponseValue {
+                type_url: "URL".to_string(),
+                value: Binary::from_base64("MTIzCg==").unwrap(),
+            }],
             events: vec![Event::new("wasm").add_attribute("fo", "ba")],
         };
         let success = SubMsgResult::Ok(response.clone());
@@ -294,6 +323,7 @@ mod tests {
         let response = SubMsgResponse {
             data: Some(Binary::from_base64("MTIzCg==").unwrap()),
             events: vec![Event::new("wasm").add_attribute("fo", "ba")],
+            msg_responses: vec![],
         };
         let success = SubMsgResult::Ok(response);
         let _ = success.unwrap_err();
@@ -304,6 +334,7 @@ mod tests {
         let success = SubMsgResult::Ok(SubMsgResponse {
             data: Some(Binary::from_base64("MTIzCg==").unwrap()),
             events: vec![Event::new("wasm").add_attribute("fo", "ba")],
+            msg_responses: vec![],
         });
         let failure = SubMsgResult::Err("broken".to_string());
         assert!(success.is_ok());
@@ -315,6 +346,7 @@ mod tests {
         let success = SubMsgResult::Ok(SubMsgResponse {
             data: Some(Binary::from_base64("MTIzCg==").unwrap()),
             events: vec![Event::new("wasm").add_attribute("fo", "ba")],
+            msg_responses: vec![],
         });
         let failure = SubMsgResult::Err("broken".to_string());
         assert!(failure.is_err());
@@ -326,6 +358,7 @@ mod tests {
         let original: Result<SubMsgResponse, StdError> = Ok(SubMsgResponse {
             data: Some(Binary::from_base64("MTIzCg==").unwrap()),
             events: vec![],
+            msg_responses: vec![],
         });
         let converted: SubMsgResult = original.into();
         assert_eq!(
@@ -333,6 +366,7 @@ mod tests {
             SubMsgResult::Ok(SubMsgResponse {
                 data: Some(Binary::from_base64("MTIzCg==").unwrap()),
                 events: vec![],
+                msg_responses: vec![],
             })
         );
 
@@ -349,6 +383,7 @@ mod tests {
         let original = SubMsgResult::Ok(SubMsgResponse {
             data: Some(Binary::from_base64("MTIzCg==").unwrap()),
             events: vec![],
+            msg_responses: vec![],
         });
         let converted: Result<SubMsgResponse, String> = original.into();
         assert_eq!(
@@ -356,6 +391,7 @@ mod tests {
             Ok(SubMsgResponse {
                 data: Some(Binary::from_base64("MTIzCg==").unwrap()),
                 events: vec![],
+                msg_responses: vec![],
             })
         );
 
