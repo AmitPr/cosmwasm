@@ -874,10 +874,12 @@ mod tests {
                 mock_wasmd_attr("_contract_address", account),
             ]);
             // which creates a reflect account. here we get the callback
+            #[allow(deprecated)]
             let response = Reply {
                 id,
                 result: SubMsgResult::Ok(SubMsgResponse {
                     events: vec![event],
+                    msg_responses: vec![],
                     data: None,
                 }),
             };
