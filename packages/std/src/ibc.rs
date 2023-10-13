@@ -53,7 +53,11 @@ pub enum IbcMsg {
     /// In this case, you can return an [`IbcReceiveResponse`] with an acknowledgement of `None`
     /// from `ibc_packet_receive` and call this message later.
     WriteAcknowledgement {
-        packet_id: String,
+        /// The channel on the destination chain (the chain this is executed on)
+        /// to write the acknowledgement to.
+        dest_channel: IbcEndpoint,
+        /// The sequence number of the packet to acknowledge.
+        sequence: u64,
         ack: IbcAcknowledgement,
     },
 }
