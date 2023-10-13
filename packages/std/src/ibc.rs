@@ -660,9 +660,6 @@ pub struct IbcReceiveResponse<T = Empty> {
 impl<T> IbcReceiveResponse<T> {
     /// Create a new response with the given acknowledgement.
     ///
-    /// If you provide `None`, the acknowledgement is asynchronous and you can provide it later
-    /// using [`IbcMsg::WriteAcknowledgement`].
-    ///
     /// ## Examples
     ///
     /// ```
@@ -670,12 +667,23 @@ impl<T> IbcReceiveResponse<T> {
     ///
     /// let _: IbcReceiveResponse = IbcReceiveResponse::new(StdAck::success(b"my ack"));
     /// let _: IbcReceiveResponse = IbcReceiveResponse::new(Binary::from(b"content"));
-    /// let _: IbcReceiveResponse = IbcReceiveResponse::new(None);
-    ///
     /// ```
-    pub fn new(ack: impl Into<Option<Binary>>) -> Self {
+    pub fn new(ack: impl Into<Binary>) -> Self {
         Self {
-            acknowledgement: ack.into(),
+            acknowledgement: Some(ack.into()),
+            messages: vec![],
+            attributes: vec![],
+            events: vec![],
+        }
+    }
+
+    /// Creates a new response without an acknowledgement.
+    ///
+    /// This allows you to send the acknowledgement asynchronously later using [`IbcMsg::WriteAcknowledgement`].
+    /// If you want to send the acknowledgement immediately, use [`IbcReceiveResponse::new`].
+    pub fn without_ack() -> Self {
+        Self {
+            acknowledgement: None,
             messages: vec![],
             attributes: vec![],
             events: vec![],
