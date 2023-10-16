@@ -318,32 +318,6 @@
         }
       ]
     },
-    "IbcAcknowledgement": {
-      "type": "object",
-      "required": [
-        "data"
-      ],
-      "properties": {
-        "data": {
-          "$ref": "#/definitions/Binary"
-        }
-      }
-    },
-    "IbcEndpoint": {
-      "type": "object",
-      "required": [
-        "channel_id",
-        "port_id"
-      ],
-      "properties": {
-        "channel_id": {
-          "type": "string"
-        },
-        "port_id": {
-          "type": "string"
-        }
-      }
-    },
     "IbcMsg": {
       "description": "These are messages in the IBC lifecycle. Only usable by IBC-enabled contracts (contracts that directly speak the IBC protocol via 6 entry points)",
       "oneOf": [
@@ -458,20 +432,16 @@
               "type": "object",
               "required": [
                 "ack",
-                "dest_channel",
+                "channel_id",
                 "sequence"
               ],
               "properties": {
                 "ack": {
-                  "$ref": "#/definitions/IbcAcknowledgement"
+                  "$ref": "#/definitions/Binary"
                 },
-                "dest_channel": {
-                  "description": "The channel on the destination chain (the chain this is executed on) to write the acknowledgement to.",
-                  "allOf": [
-                    {
-                      "$ref": "#/definitions/IbcEndpoint"
-                    }
-                  ]
+                "channel_id": {
+                  "description": "The local channel (on the chain this is executed on) to write the acknowledgement to.",
+                  "type": "string"
                 },
                 "sequence": {
                   "description": "The sequence number of the packet to acknowledge.",
